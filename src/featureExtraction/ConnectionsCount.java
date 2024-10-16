@@ -3,7 +3,6 @@ package featureExtraction;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +32,7 @@ public class ConnectionsCount implements FeatureExtractor {
 
     void check(Point current, BufferedImage image) {
         this.points.remove(current);
-        for (Point next : getNeighbors(current)) {
+        for (Point next : getNeighbors(current, image)) {
             if (isNeighbor(current, next, image) && this.points.get(next) != null) {
                 check(current, image);
             }
@@ -41,11 +40,23 @@ public class ConnectionsCount implements FeatureExtractor {
     }
 
     private Point[] getNeighbors(Point p, BufferedImage image) {
-        if (p.x == 0) {
-            return new Point[] { new Point(p.x + 1, p.y), new Point(p.x, p.y + 1)};
-        } else if (p.x == 0 && p.y == 0) {
-            return new Point[] { new Point(p.x + 1, p.y), new Point(p.x, p.y + 1)};
+        int width = image.getWidth();
+        int height = image.getHeight();
+        List<Point> neighbors = new ArrayList<>();
+    
+        int[] dx = {0, -1, 0, 1};
+        int[] dy = {-1, 0, 1, 0};
+    
+        for (int i = 0; i < 4; i++) {
+            int newX = p.x + dx[i];
+            int newY = p.y + dy[i];
+    
+            if (newX >= 0 && newX < width && newY >= 0 && newY < height) {
+                neighbors.add(new Point(newX, newY));
+            }
         }
+    
+        return neighbors.toArray(new Point[0]);
     }
 
     private boolean isNeighbor(Point p, Point neighbor, BufferedImage image) {
@@ -57,5 +68,5 @@ public class ConnectionsCount implements FeatureExtractor {
             return true;
         return false;
     }
-    
+
 }

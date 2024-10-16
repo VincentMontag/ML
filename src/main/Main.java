@@ -8,6 +8,7 @@ import java.util.*;
 import javax.imageio.ImageIO;
 
 import featureExtraction.ColorCount;
+import featureExtraction.ConnectionsCount;
 import featureExtraction.CornerCount;
 import gui.ImageDisplay;
 import learning.*;
@@ -23,29 +24,34 @@ public class Main {
     public static void main(String[] args) {
         Main main = new Main();
 
-        List<FeatureVector> fvs = main.readAllFeatureVectors();
-        Learner learner = new KNearestNeighbor();
-
-        learner.learn(fvs);
-
-        FeatureVector test = main.createFeatureVector(
-                main.getImage("Verkehrszeichen/Vorfahrtsstraße/0/80x60/X-40Y-40.bmp"),
-                Concept.Vorfahrtsstraße);
-
-        Concept result = learner.classify(test);
-        System.out.println(result);
         
+
         // for (Concept concept : Concept.values())
         // main.createFeatureVectors(concept);
 
         // main.printFeatureVector(FileManager.readFile("StopX0Y0"));
         // main.rotationExample();
-        // FeatureVector test =
-        // main.createFeatureVector(main.getImage("Verkehrszeichen/Stop/0/80x60/X-10Y-10.bmp"),
-        // Concept.Stop);
-        // main.printFeatureVector(test);
+        
+        FeatureVector test =
+        main.createFeatureVector(main.getImage("Verkehrszeichen/Stop/0/80x60/X-10Y-10.bmp"),
+        Concept.Stop);
+        main.printFeatureVector(test);
 
         // main.getImage("Verkehrszeichen/Stop/0/3500/X0Y0.jpg");
+    }
+
+    void learningWithFinishedFVs() {
+        List<FeatureVector> fvs = readAllFeatureVectors();
+        Learner learner = new KNearestNeighbor();
+
+        learner.learn(fvs);
+
+        FeatureVector test = createFeatureVector(
+                getImage("Verkehrszeichen/Vorfahrtsstraße/0/80x60/X-40Y-40.bmp"),
+                Concept.Vorfahrtsstraße);
+
+        Concept result = learner.classify(test);
+        System.out.println(result);
     }
 
     List<FeatureVector> readAllFeatureVectors() {
@@ -78,7 +84,9 @@ public class Main {
                 new ColorCount(0, Color.YELLOW),
                 new ColorCount(1, Color.YELLOW),
                 new ColorCount(2, Color.YELLOW),
-                new ColorCount(3, Color.YELLOW)));
+                new ColorCount(3, Color.YELLOW),
+                
+                new ConnectionsCount()));
 
         // new CornerCount()));
     }
