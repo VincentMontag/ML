@@ -4,8 +4,9 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import gui.ShapeDisplay;
 import main.Color;
 import main.FeatureExtractor;
 import main.Point;
@@ -26,6 +27,10 @@ public class ConnectionsCount implements FeatureExtractor {
         while (!this.points.isEmpty()) {
             check(this.points.keySet().iterator().next(), image);
             count++;
+            
+            //new ShapeDisplay(new ArrayList<>(points.keySet()));
+            
+            System.out.println("inc count");
         }
         return count;
     }
@@ -34,7 +39,7 @@ public class ConnectionsCount implements FeatureExtractor {
         this.points.remove(current);
         for (Point next : getNeighbors(current, image)) {
             if (isNeighbor(current, next, image) && this.points.get(next) != null) {
-                check(current, image);
+                check(next, image);
             }
         }
     }
@@ -62,10 +67,15 @@ public class ConnectionsCount implements FeatureExtractor {
     private boolean isNeighbor(Point p, Point neighbor, BufferedImage image) {
         int rgb1 = image.getRGB(p.x, p.y);
         Color color1 = Util.getColorOfPixel(rgb1);
-        int rgb2 = image.getRGB(p.x, p.y);
+        int rgb2 = image.getRGB(neighbor.x, neighbor.y);
         Color color2 = Util.getColorOfPixel(rgb2);
+
+        if (!color1.equals(Color.UNKNOWN) && !color1.equals(Color.RED))
+            return true;
+
         if (color1.equals(color2))
             return true;
+            
         return false;
     }
 

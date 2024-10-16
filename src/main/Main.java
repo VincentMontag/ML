@@ -24,8 +24,6 @@ public class Main {
     public static void main(String[] args) {
         Main main = new Main();
 
-        
-
         // for (Concept concept : Concept.values())
         // main.createFeatureVectors(concept);
 
@@ -33,7 +31,7 @@ public class Main {
         // main.rotationExample();
         
         FeatureVector test =
-        main.createFeatureVector(main.getImage("Verkehrszeichen/Stop/0/80x60/X-10Y-10.bmp"),
+        main.createFeatureVector(main.getImage("Verkehrszeichen/Stop/0/80x60/X0Y0.bmp"),
         Concept.Stop);
         main.printFeatureVector(test);
 
