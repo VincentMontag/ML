@@ -30,26 +30,36 @@ public class Main {
         // main.printFeatureVector(FileManager.readFile("StopX0Y0"));
         // main.rotationExample();
         
-        FeatureVector test =
-        main.createFeatureVector(main.getImage("Verkehrszeichen/Stop/0/80x60/X0Y0.bmp"),
-        Concept.Stop);
+        FeatureVector test = main.createFeatureVector(
+                main.getImage("Verkehrszeichen/Vorfahrtsstraße/0/80x60/X0Y0.bmp"),
+                Concept.Vorfahrtsstraße
+        );
         main.printFeatureVector(test);
 
         // main.getImage("Verkehrszeichen/Stop/0/3500/X0Y0.jpg");
+
+        main.learningWithFinishedFVs();
     }
 
     void learningWithFinishedFVs() {
-        List<FeatureVector> fvs = readAllFeatureVectors();
-        Learner learner = new KNearestNeighbor();
 
-        learner.learn(fvs);
+        List<FeatureVector> fvs = readAllFeatureVectors();
+
+        //for (FeatureVector fv : fvs) {
+        //    System.out.println("FeatureVector for concept " + fv.getConcept() + " has " + fv.getNumFeatures() + " features.");
+        //}
 
         FeatureVector test = createFeatureVector(
                 getImage("Verkehrszeichen/Vorfahrtsstraße/0/80x60/X-40Y-40.bmp"),
                 Concept.Vorfahrtsstraße);
 
-        Concept result = learner.classify(test);
-        System.out.println(result);
+        //System.out.println("Test FeatureVector has " + test.getNumFeatures() + " features.");
+
+        KNearestNeighbor knn = new KNearestNeighbor();
+        int k = 5;
+        Concept result = knn.classify(k, test, fvs);
+
+        System.out.println("Classification result: " + result);
     }
 
     List<FeatureVector> readAllFeatureVectors() {
@@ -82,9 +92,9 @@ public class Main {
                 new ColorCount(0, Color.YELLOW),
                 new ColorCount(1, Color.YELLOW),
                 new ColorCount(2, Color.YELLOW),
-                new ColorCount(3, Color.YELLOW),
+                new ColorCount(3, Color.YELLOW)));
                 
-                new ConnectionsCount()));
+                //new ConnectionsCount()));
 
         // new CornerCount()));
     }

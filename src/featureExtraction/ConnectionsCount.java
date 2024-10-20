@@ -30,7 +30,7 @@ public class ConnectionsCount implements FeatureExtractor {
             
             //new ShapeDisplay(new ArrayList<>(points.keySet()));
             
-            System.out.println("inc count");
+            //System.out.println("inc count");
         }
         return count;
     }
