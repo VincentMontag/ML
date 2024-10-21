@@ -3,6 +3,7 @@ package learning;
 import main.Concept;
 import main.FeatureExtractor;
 import main.FeatureVector;
+import learning.Learner;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -11,71 +12,56 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class KNearestNeighbor implements FeatureVector {
+public class KNearestNeighbor implements Learner {
+    // Store the training set
+    private List<FeatureVector> trainingSet;
+    // Number of neighbors
+    private int k;
 
-    private Concept concept;
-    private int[] features;
+    public KNearestNeighbor(int k) {
+        this.k = k;
+        this.trainingSet = new ArrayList<>();
+    }
 
-    KNearestNeighbor(BufferedImage image, Concept concept, List<FeatureExtractor> featureExtractors) {
-        this.concept = concept;
-        this.features = new int[featureExtractors.size()];
-        for (int i = 0; i < featureExtractors.size(); i++)
+    public KNearestNeighbor(BufferedImage image, Concept concept, List<FeatureExtractor> featureExtractors) {
+        this.k = 3;
+        this.trainingSet = new ArrayList<>();
+        int[] features = new int[featureExtractors.size()];
+        for (int i = 0; i < featureExtractors.size(); i++) {
             features[i] = featureExtractors.get(i).extractFeature(image);
-    }
-
-    public KNearestNeighbor() {
-    }
-
-    @Override
-    public Concept getConcept() {
-        return this.concept;
-    }
-
-    @Override
-    public int getNumFeatures() {
-        return this.features.length;
-    }
-
-    @Override
-    public int getFeatureValue(int i) {
-        return this.features[i];
-    }
-
-    // Calculate euclidian distance
-    private static double calculateEuclideanDistance(FeatureVector a, FeatureVector b) {
-
-        if (a.getNumFeatures() != b.getNumFeatures()) {
-            throw new IllegalArgumentException("Feature vectors must have the same number of features");
         }
-        double sum = 0;
-        for (int i = 0; i < a.getNumFeatures(); i++) {
-            int diff = a.getFeatureValue(i) - b.getFeatureValue(i);
-            sum += diff * diff;
+    }
+
+    // Learning method to store the training set
+    @Override
+    public void learn(List<FeatureVector> trainingSet) {
+        this.trainingSet = trainingSet; // Simply store the training data
+    }
+
+    // Classify a given feature vector based on the training data
+    @Override
+    public Concept classify(FeatureVector example) {
+        if (trainingSet.isEmpty()) {
+            throw new IllegalStateException("Training set is empty. Learn before classifying.");
         }
 
-        return Math.sqrt(sum);
-    }
-
-    public Concept classify(int k, FeatureVector inputFeatureVector, List<FeatureVector> allFeatureVectors) {
-        // Safe neighbors in list
         List<Neighbor> neighbors = new ArrayList<>();
-
-        // Calculate distance and save them
-        for (FeatureVector featureVector : allFeatureVectors) {
-            double distance = calculateEuclideanDistance(inputFeatureVector, featureVector);
+        for (FeatureVector featureVector : trainingSet) {
+            double distance = calculateEuclideanDistance(example, featureVector);
             neighbors.add(new Neighbor(featureVector, distance));
         }
 
         neighbors.sort(Comparator.comparingDouble(Neighbor::getDistance));
-        List<Neighbor> kNearestNeighbors = neighbors.subList(0, k);
+        List<Neighbor> kNearestNeighbors = neighbors.subList(0, Math.min(k, neighbors.size()));
 
-        // count number of concepts
+        // Count the concepts among k nearest neighbors
         Map<Concept, Integer> conceptCount = new HashMap<>();
         for (Neighbor neighbor : kNearestNeighbors) {
             Concept concept = neighbor.getFeatureVector().getConcept();
             conceptCount.put(concept, conceptCount.getOrDefault(concept, 0) + 1);
         }
 
+        // Determine the most common concept
         Concept mostCommonConcept = null;
         int maxCount = 0;
         for (Map.Entry<Concept, Integer> entry : conceptCount.entrySet()) {
@@ -86,6 +72,20 @@ public class KNearestNeighbor implements FeatureVector {
         }
 
         return mostCommonConcept;
+    }
+
+    // Calculate Euclidean distance between two feature vectors
+    private static double calculateEuclideanDistance(FeatureVector a, FeatureVector b) {
+        if (a.getNumFeatures() != b.getNumFeatures()) {
+            throw new IllegalArgumentException("Feature vectors must have the same number of features");
+        }
+        double sum = 0;
+        for (int i = 0; i < a.getNumFeatures(); i++) {
+            int diff = a.getFeatureValue(i) - b.getFeatureValue(i);
+            sum += diff * diff;
+        }
+
+        return Math.sqrt(sum);
     }
 
     // Helper class to store a FeatureVector and its distance

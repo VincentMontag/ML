@@ -44,23 +44,19 @@ public class Main {
     void learningWithFinishedFVs() {
 
         List<FeatureVector> fvs = readAllFeatureVectors();
-
-        //for (FeatureVector fv : fvs) {
-        //    System.out.println("FeatureVector for concept " + fv.getConcept() + " has " + fv.getNumFeatures() + " features.");
-        //}
-
         FeatureVector test = createFeatureVector(
                 getImage("Verkehrszeichen/Vorfahrtsstraße/0/80x60/X-40Y-40.bmp"),
                 Concept.Vorfahrtsstraße);
 
-        //System.out.println("Test FeatureVector has " + test.getNumFeatures() + " features.");
-
-        KNearestNeighbor knn = new KNearestNeighbor();
         int k = 5;
-        Concept result = knn.classify(k, test, fvs);
-
+        KNearestNeighbor knn = new KNearestNeighbor(k);
+        knn.learn(fvs);
+        System.out.println("Learning ...");
+        Concept result = knn.classify(test);
+        System.out.println("Classifying ...");
         System.out.println("Classification result: " + result);
     }
+
 
     List<FeatureVector> readAllFeatureVectors() {
         List<FeatureVector> fvs = new ArrayList<>();
