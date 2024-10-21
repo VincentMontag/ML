@@ -1,31 +1,28 @@
 package learning;
 
 import main.Concept;
-import main.FeatureExtractor;
 import main.FeatureVector;
-import learning.Learner;
 
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class KNearestNeighbor implements Learner {
-    // Store the training set
-    private List<FeatureVector> trainingSet;
     // Number of neighbors
-    private int k;
+    private final int k;
+    // Store the training set
+    private Set<FeatureVector> trainingSet;
 
     public KNearestNeighbor(int k) {
         this.k = k;
-        this.trainingSet = new ArrayList<>();
     }
 
     // Learning method to store the training set
     @Override
-    public void learn(List<FeatureVector> trainingSet) {
+    public void learn(Set<FeatureVector> trainingSet) {
         this.trainingSet = trainingSet; // Simply store the training data
     }
 

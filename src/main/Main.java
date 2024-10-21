@@ -8,15 +8,16 @@ import java.util.*;
 import javax.imageio.ImageIO;
 
 import featureExtraction.ColorCount;
-import featureExtraction.ConnectionsCount;
-import featureExtraction.CornerCount;
-import gui.ImageDisplay;
 import learning.*;
 
 public class Main {
 
-    private static final int RANGE = 30; // FeatureVector count per concept: (RANGE * 0.2 + 1)^2
+    private static final int ITERATIONS = 1;
 
+    private static final int TRAININGS_SET_SIZE_PER_CONCEPT = 10;
+
+    private static final int K_NEAREST_NEIGHBOR = 5;
+    
     public static final int DEFAULT_WIDTH = 160;
 
     public static final int DEFAULT_HEIGHT = 120;
@@ -24,52 +25,32 @@ public class Main {
     public static void main(String[] args) {
         Main main = new Main();
 
-        // for (Concept concept : Concept.values())
-        // main.createFeatureVectors(concept);
+        // If feature vectors are not created yet
+        //for (Concept concept : Concept.values())
+        //    main.createFeatureVectors(concept);
 
-        // main.printFeatureVector(FileManager.readFile("StopX0Y0"));
-        // main.rotationExample();
-        
-        FeatureVector test = main.createFeatureVector(
-                main.getImage("Verkehrszeichen/Vorfahrtsstraße/0/80x60/X0Y0.bmp"),
-                Concept.Vorfahrtsstraße
-        );
-        main.printFeatureVector(test);
+        for (int i = 0; i < ITERATIONS; i++) {
+            int seed = (int) (Math.random() * ITERATIONS);
+            System.out.println("Create data set with random seed " + seed);
+            DataSetCreator dataSetCreator = new DataSetCreator(TRAININGS_SET_SIZE_PER_CONCEPT, seed);
+            
+            Set<FeatureVector> trainingsData = dataSetCreator.getTrainingsData();
+            Set<FeatureVector> testData = dataSetCreator.getTestData();
+            
+            Learner learner = new KNearestNeighbor(K_NEAREST_NEIGHBOR);
+            learner.learn(trainingsData);
 
-        // main.getImage("Verkehrszeichen/Stop/0/3500/X0Y0.jpg");
+            int successCount = 0;
 
-        main.learningWithFinishedFVs();
-    }
-
-    void learningWithFinishedFVs() {
-
-        List<FeatureVector> fvs = readAllFeatureVectors();
-        FeatureVector test = createFeatureVector(
-                getImage("Verkehrszeichen/Vorfahrtsstraße/0/80x60/X-40Y-40.bmp"),
-                Concept.Vorfahrtsstraße);
-
-        int k = 5;
-        KNearestNeighbor knn = new KNearestNeighbor(k);
-        knn.learn(fvs);
-        System.out.println("Learning ...");
-        Concept result = knn.classify(test);
-        System.out.println("Classifying ...");
-        System.out.println("Classification result: " + result);
-    }
-
-
-    List<FeatureVector> readAllFeatureVectors() {
-        List<FeatureVector> fvs = new ArrayList<>();
-        for (Concept concept : Concept.values()) {
-            for (int i = -RANGE; i <= RANGE; i += 10) {
-                for (int k = -RANGE; k <= RANGE; k += 10) {
-                    String xy = "X" + i + "Y" + k;
-                    FeatureVector fv = FileManager.readFile(concept.name() + xy);
-                    fvs.add(fv);
-                }
+            for (FeatureVector testVector : testData) {
+                Concept classified = learner.classify(testVector);
+                if (classified.equals(testVector.getConcept()))
+                    successCount++;
             }
+
+            System.out.println("AI Strength: " + (double) successCount / testData.size());            
         }
-        return fvs;
+        
     }
 
     FeatureVector createFeatureVector(BufferedImage image, Concept concept) {
@@ -89,10 +70,6 @@ public class Main {
                 new ColorCount(1, Color.YELLOW),
                 new ColorCount(2, Color.YELLOW),
                 new ColorCount(3, Color.YELLOW)));
-                
-                //new ConnectionsCount()));
-
-        // new CornerCount()));
     }
 
     void printFeatureVector(FeatureVector vector) {
@@ -103,8 +80,8 @@ public class Main {
     }
 
     void createFeatureVectors(Concept concept) {
-        for (int i = -RANGE; i <= RANGE; i += 10) {
-            for (int k = -RANGE; k <= RANGE; k += 10) {
+        for (int i = -DataSetCreator.RANGE; i <= DataSetCreator.RANGE; i += 10) {
+            for (int k = -DataSetCreator.RANGE; k <= DataSetCreator.RANGE; k += 10) {
                 String xy = "X" + i + "Y" + k;
                 FeatureVector vector = createFeatureVector(
                         getImage("Verkehrszeichen/" + concept.name() + "/0/80x60/" + xy + ".bmp"), concept);
