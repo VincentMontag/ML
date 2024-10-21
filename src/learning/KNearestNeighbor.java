@@ -23,15 +23,6 @@ public class KNearestNeighbor implements Learner {
         this.trainingSet = new ArrayList<>();
     }
 
-    public KNearestNeighbor(BufferedImage image, Concept concept, List<FeatureExtractor> featureExtractors) {
-        this.k = 3;
-        this.trainingSet = new ArrayList<>();
-        int[] features = new int[featureExtractors.size()];
-        for (int i = 0; i < featureExtractors.size(); i++) {
-            features[i] = featureExtractors.get(i).extractFeature(image);
-        }
-    }
-
     // Learning method to store the training set
     @Override
     public void learn(List<FeatureVector> trainingSet) {
