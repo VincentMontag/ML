@@ -1,10 +1,8 @@
 package main;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 public class DataSetCreator {
 
@@ -12,41 +10,50 @@ public class DataSetCreator {
 
 	private final Random random;
 
-	private final Set<FeatureVector> trainingsSet;
+	private final List<FeatureVector> trainingsSet;
 
-	private final Set<FeatureVector> testSet;
+	private final List<FeatureVector> testSet;
 
 	DataSetCreator(int trainingsSetSizePerConcept, long seed) {
 		this.random = new Random(seed);
 
-		this.trainingsSet = new HashSet<>();
-		this.testSet = new HashSet<>();
-
-		List<String> usedNames = new ArrayList<>();
+		this.trainingsSet = new ArrayList<>();
+		this.testSet = new ArrayList<>();
 
 		for (Concept concept : Concept.values()) {
 
-			for (int i = 0; i < trainingsSetSizePerConcept; i++) {
-				int randNum1 = nextRandom();
-				int randNum2 = nextRandom();
+			List<String> usedNames = new ArrayList<>();
 
-				String xy = "X" + randNum1 + "Y" + randNum2;
+			for (int i = 0; i < trainingsSetSizePerConcept; i++) {
+				String xy;
+
+				do {
+					int brightness = this.random.nextInt(5) - 2;
+					String bStr = Util.getBrightness(brightness);
+					int randNum1 = nextRandom();
+					int randNum2 = nextRandom();
+					xy = bStr + "X" + randNum1 + "Y" + randNum2;
+				} while (usedNames.contains(xy));
 
 				usedNames.add(xy);
 
 				FeatureVector fv = FileManager.readFile(concept.name() + xy);
 				trainingsSet.add(fv);
-			}		
+			}
 
-			for (int i = -RANGE; i <= RANGE; i += 10) {
-				for (int k = -RANGE; k <= RANGE; k += 10) {
-					
-					String xy = "X" + i + "Y" + k;
+			for (int b = -2; b <= 2; b++) {
+				String bStr = Util.getBrightness(b);
 
-					if (!usedNames.contains(xy)) {
-						FeatureVector fv = FileManager.readFile(concept.name() + xy);
-						testSet.add(fv);
-					}			
+				for (int i = -RANGE; i <= RANGE; i += 10) {
+					for (int k = -RANGE; k <= RANGE; k += 10) {
+
+						String xy = bStr + "X" + i + "Y" + k;
+
+						if (!usedNames.contains(xy)) {
+							FeatureVector fv = FileManager.readFile(concept.name() + xy);
+							testSet.add(fv);
+						}
+					}
 				}
 			}
 		}
@@ -59,11 +66,11 @@ public class DataSetCreator {
 		return randNum;
 	}
 
-	Set<FeatureVector> getTrainingsData() {
+	List<FeatureVector> getTrainingsData() {
 		return this.trainingsSet;
 	}
 
-	Set<FeatureVector> getTestData() {
+	List<FeatureVector> getTestData() {
 		return this.testSet;
 	}
 

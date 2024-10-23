@@ -9,7 +9,6 @@ public class ImageDisplay extends JPanel {
     private BufferedImage image;
 
     public ImageDisplay(BufferedImage image) {
-        System.out.println(image.getWidth() + ", " + image.getHeight());
         this.image = image;
         JFrame frame = new JFrame("BufferedImage Display");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

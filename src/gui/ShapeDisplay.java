@@ -44,7 +44,6 @@ public class ShapeDisplay extends JPanel {
         try {
             for (int i = 0; i < points.size(); i++) {
                 Point point = points.get(i);
-                System.out.println("draw point " + point);
                 if (bends != null && bends.get(i))
                     g.setColor(Color.GREEN);
                 else

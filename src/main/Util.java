@@ -6,6 +6,10 @@ import java.awt.image.BufferedImage;
 
 public class Util {
 
+    public static String getBrightness(int b) {
+        return b > 0 ? "+" + b : "" + b;
+    }
+
     public static Color getColorOfPixel(int argb) {
         int alpha = (argb >> 24) & 0xff;
         int red = (argb >> 16) & 0xff;
@@ -22,7 +26,7 @@ public class Util {
             return Color.RED;
         else if ((r >= g && r > b) && (g - b > 40))
             return Color.YELLOW;
-        else if (Math.abs(r - g) < 30 && Math.abs(g - b) < 30 && Math.abs(r - b) < 30)
+        else if (Math.abs(r - g) < 30 && Math.abs(g - b) < 30 && Math.abs(r - b) < 30 && r < 30)
             return Color.BLACK;
         else if (r < g && g < b && r > 170)
             return Color.BLUE;
@@ -102,7 +106,14 @@ public class Util {
             }
         }
 
-        return image.getSubimage(left, top, right - left, bottom - top);
+        try {
+            BufferedImage newImage = image.getSubimage(left, top, right - left, bottom - top);
+            if (newImage.getWidth() < 2 || newImage.getHeight() < 2)
+                return image;
+            return newImage;          
+        } catch (Exception e) {
+            return image;
+        }
     }
 
 }

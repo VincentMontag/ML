@@ -1,6 +1,6 @@
 package learning;
 
-import java.util.Set;
+import java.util.List;
 
 import main.Concept;
 import main.FeatureVector;
@@ -13,7 +13,7 @@ public interface Learner {
 	 * @param trainingSet contains feature vectors and corresponding concepts
 	 *                    to provide experience to learn from
 	 */
-	void learn(Set<FeatureVector> trainingSet);
+	void learn(List<FeatureVector> trainingSet);
 
 	/**
 	 * find the concept of the example from the internal knowledge of the lerner
