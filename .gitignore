@@ -28,5 +28,6 @@ bin/
 
 Verkehrszeichen/
 featureVectors/
+featureVectorsC2/
 .idea/
 machine_learning_1.iml

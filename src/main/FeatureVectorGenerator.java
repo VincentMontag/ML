@@ -8,11 +8,13 @@ public class FeatureVectorGenerator implements FeatureVector {
     private final Concept concept;
     private final int[] features;
 
-    FeatureVectorGenerator(BufferedImage image, Concept concept, List<FeatureExtractor> featureExtractors) {
+    FeatureVectorGenerator(BufferedImage image, int clusteringCount, Concept concept, List<FeatureExtractor> featureExtractors) {
+        BufferedImage[] subImages = new Clustering().cluster(image, clusteringCount);
         this.concept = concept;
-        this.features = new int[featureExtractors.size()];
+        this.features = new int[featureExtractors.size() * subImages.length];
         for (int i = 0; i < featureExtractors.size(); i++)
-            features[i] = featureExtractors.get(i).extractFeature(image);
+            for (int k = 0; k < subImages.length; k++)
+                this.features[i * subImages.length + k] = featureExtractors.get(i).extractFeature(subImages[k]);
     }
 
     @Override

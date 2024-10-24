@@ -12,7 +12,7 @@ import learning.*;
 
 public class Main {
 
-    private static final int ITERATIONS = 10;
+    private static final int ITERATIONS = 1;
 
     private static final int TRAININGS_SET_SIZE_PER_CONCEPT = 500; // whole: 1445 per concept
 
@@ -25,12 +25,13 @@ public class Main {
 
         // If feature vectors are not created yet
         //for (Concept concept : Concept.values()) new Thread(() -> main.createFeatureVectors(concept)).start();
-        
+
         // Test model
-        main.testAIModel();
+        //main.testAIModel(new KNearestNeighbor(5));
+        main.testAIModel(new Cal2());
     }
 
-    void testAIModel() {
+    void testAIModel(Learner learner) {
         for (int i = 0; i < ITERATIONS; i++) {
             int seed = (int) (Math.random() * ITERATIONS);
             System.out.println("Create data set with random seed " + seed);
@@ -39,7 +40,7 @@ public class Main {
             List<FeatureVector> trainingsData = dataSetCreator.getTrainingsData();
             List<FeatureVector> testData = dataSetCreator.getTestData();
 
-            Learner learner = new KNearestNeighbor(5);
+            System.out.println("Learn data");
             learner.learn(trainingsData);
 
             Map<Concept, Double> successCount = new HashMap<>();
@@ -51,29 +52,26 @@ public class Main {
                     successCount.put(classified, 1 + successCount.getOrDefault(classified, 0.0));
             }
 
-            for (Concept c : successCount.keySet()) {
-                double result = 100 * successCount.get(c) * Concept.values().length / testData.size();
+            System.out.println("Get results");
+            double resultSum = 0;
+            for (Concept c : Concept.values()) {
+                double result = 100 * successCount.getOrDefault(c, 0.0) * Concept.values().length / testData.size();
+                resultSum += result;
                 System.out.println("AI Strength in " + c.name() + ": " + Math.round(result * 10) / 10.0 + "%");
             }
+
+            System.out.println();
+            System.out.println("Average AI Strength: " + Math.round(resultSum * 10 / Concept.values().length) / 10.0 + "%");
+            System.out.println();
         }
     }
 
     FeatureVector createFeatureVector(BufferedImage image, Concept concept) {
-        return new FeatureVectorGenerator(image, concept, Arrays.asList(
-                new ColorCount(0, Color.BLUE),
-                new ColorCount(1, Color.BLUE),
-                new ColorCount(2, Color.BLUE),
-                new ColorCount(3, Color.BLUE),
-
-                new ColorCount(0, Color.RED),
-                new ColorCount(1, Color.RED),
-                new ColorCount(2, Color.RED),
-                new ColorCount(3, Color.RED),
-
-                new ColorCount(0, Color.YELLOW),
-                new ColorCount(1, Color.YELLOW),
-                new ColorCount(2, Color.YELLOW),
-                new ColorCount(3, Color.YELLOW)));
+        // Generates clusteringCount times the number of feature extractors vectors
+        return new FeatureVectorGenerator(image, 9, concept, Arrays.asList(
+                new ColorCount(Color.BLUE),
+                new ColorCount(Color.RED),
+                new ColorCount(Color.YELLOW)));
     }
 
     void printFeatureVector(FeatureVector vector) {
@@ -91,7 +89,8 @@ public class Main {
                     String bStr = Util.getBrightness(b);
                     String xy = "X" + i + "Y" + k;
                     FeatureVector vector = createFeatureVector(
-                            getImage("Verkehrszeichen/" + concept.name() + "/" + bStr + "/80x60/" + xy + ".bmp"), concept);
+                            getImage("Verkehrszeichen/" + concept.name() + "/" + bStr + "/80x60/" + xy + ".bmp"),
+                            concept);
                     FileManager.writeFile(vector, concept.name() + bStr + xy);
                 }
             }
