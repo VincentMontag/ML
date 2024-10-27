@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.*;
 
-import gui.ShapeDisplay;
 import main.Color;
 import main.FeatureExtractor;
 import main.Point;

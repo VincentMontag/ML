@@ -11,7 +11,6 @@ public class Util {
     }
 
     public static Color getColorOfPixel(int argb) {
-        int alpha = (argb >> 24) & 0xff;
         int red = (argb >> 16) & 0xff;
         int green = (argb >> 8) & 0xff;
         int blue = (argb) & 0xff;

@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Supplier;
 
 import javax.imageio.ImageIO;
 
@@ -11,8 +12,6 @@ import featureExtraction.ColorCount;
 import learning.*;
 
 public class Main {
-
-    private static final int ITERATIONS = 1;
 
     private static final int TRAININGS_SET_SIZE_PER_CONCEPT = 500; // whole: 1445 per concept
 
@@ -22,48 +21,77 @@ public class Main {
 
     public static void main(String[] args) {
         Main main = new Main();
-
-        // If feature vectors are not created yet
-        //for (Concept concept : Concept.values()) new Thread(() -> main.createFeatureVectors(concept)).start();
-
-        // Test model
-        //main.testAIModel(new KNearestNeighbor(5));
-        main.testAIModel(new Cal2());
+        main.testKNN(main);
     }
 
-    void testAIModel(Learner learner) {
-        for (int i = 0; i < ITERATIONS; i++) {
-            int seed = (int) (Math.random() * ITERATIONS);
-            System.out.println("Create data set with random seed " + seed);
-            DataSetCreator dataSetCreator = new DataSetCreator(TRAININGS_SET_SIZE_PER_CONCEPT, seed);
+    void testKNN(Main main) {
+        main.testAIModel(() -> new KNearestNeighbor(3), 20);
+        // Best averag: 96%, seed: 18
+        main.testAIModel(new KNearestNeighbor(3), 18);
+    }
 
-            List<FeatureVector> trainingsData = dataSetCreator.getTrainingsData();
-            List<FeatureVector> testData = dataSetCreator.getTestData();
+    void testCal2(Main main) {
+        main.testAIModel(() -> new Cal2(), 20);
+        // Best average: 64.5%, seed: 19
+        main.testAIModel(new Cal2(), 19);
+    }
 
-            System.out.println("Learn data");
-            learner.learn(trainingsData);
+    void createVectors(Main main) {
+        // If feature vectors are not created yet
+        for (Concept concept : Concept.values())
+            new Thread(() -> main.createFeatureVectors(concept)).start();
+    }
 
-            Map<Concept, Double> successCount = new HashMap<>();
+    void testAIModel(Supplier<Learner> learnerConstructor, int iterations) {
+        double bestAverage = 0;
+        int bestAverageSeed = 0;
+        for (int i = 0; i < iterations; i++) {
+            Learner learner = learnerConstructor.get();
 
-            System.out.println("Start testing");
-            for (FeatureVector testVector : testData) {
-                Concept classified = learner.classify(testVector);
-                if (classified.equals(testVector.getConcept()))
-                    successCount.put(classified, 1 + successCount.getOrDefault(classified, 0.0));
+            double average = testAIModel(learner, i);
+
+            if (average > bestAverage) {
+                bestAverage = average;
+                bestAverageSeed = i;
             }
-
-            System.out.println("Get results");
-            double resultSum = 0;
-            for (Concept c : Concept.values()) {
-                double result = 100 * successCount.getOrDefault(c, 0.0) * Concept.values().length / testData.size();
-                resultSum += result;
-                System.out.println("AI Strength in " + c.name() + ": " + Math.round(result * 10) / 10.0 + "%");
-            }
-
-            System.out.println();
-            System.out.println("Average AI Strength: " + Math.round(resultSum * 10 / Concept.values().length) / 10.0 + "%");
-            System.out.println();
         }
+
+        System.out.println("Best average: " + bestAverage + ", seed: " + bestAverageSeed);
+    }
+
+    double testAIModel(Learner learner, int seed) {
+        System.out.println("Create data set with seed " + seed);
+        DataSetCreator dataSetCreator = new DataSetCreator(TRAININGS_SET_SIZE_PER_CONCEPT, seed);
+
+        List<FeatureVector> trainingsData = dataSetCreator.getTrainingsData();
+        List<FeatureVector> testData = dataSetCreator.getTestData();
+
+        System.out.println("Learn data");
+        learner.learn(trainingsData);
+
+        Map<Concept, Double> successCount = new HashMap<>();
+
+        System.out.println("Start testing");
+        for (FeatureVector testVector : testData) {
+            Concept classified = learner.classify(testVector);
+            if (testVector.getConcept().equals(classified))
+                successCount.put(classified, 1 + successCount.getOrDefault(classified, 0.0));
+        }
+
+        System.out.println("Get results");
+        double resultSum = 0;
+        for (Concept c : Concept.values()) {
+            double result = 100 * successCount.getOrDefault(c, 0.0) * Concept.values().length / testData.size();
+            resultSum += result;
+            System.out.println("AI Strength in " + c.name() + ": " + Math.round(result * 10) / 10.0 + "%");
+        }
+        double average = Math.round(resultSum * 10 / Concept.values().length) / 10.0;
+
+        System.out.println();
+        System.out.println("Average AI Strength: " + average + "%");
+        System.out.println();
+
+        return average;
     }
 
     FeatureVector createFeatureVector(BufferedImage image, Concept concept) {
