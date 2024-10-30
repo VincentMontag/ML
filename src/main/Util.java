@@ -45,7 +45,7 @@ public class Util {
     }
 
     public static BufferedImage scale(BufferedImage image, int width, int height) {
-        if (image.getWidth() == Main.DEFAULT_WIDTH && image.getHeight() == Main.DEFAULT_HEIGHT)
+        if (image.getWidth() == CreateFeatureVectors.DEFAULT_IMAGE_WIDTH && image.getHeight() == CreateFeatureVectors.DEFAULT_IMAGE_HEIGHT)
             return image;
         BufferedImage scaledImage = new BufferedImage(width, height, image.getType());
         Graphics2D g2d = scaledImage.createGraphics();
