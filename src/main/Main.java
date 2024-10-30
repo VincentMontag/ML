@@ -2,6 +2,7 @@ package main;
 
 import java.util.*;
 import learning.*;
+import testing.DifferentEpoches;
 import testing.DifferentSeeds;
 import testing.TestAI;
 
@@ -12,10 +13,12 @@ public class Main {
         // If feature vectors are not created yet
         //new CreateFeatureVectors();
         
-        TestAI testWithDifferentSeeds = new DifferentSeeds();
+        //TestAI testWithDifferentSeeds = new DifferentSeeds();
+        TestAI testWithDifferentEpoches = new DifferentEpoches();
 
         //testWithDifferentSeeds.testModel(() -> new KNearestNeighbor(3));
-        testWithDifferentSeeds.testModel(() -> new Cal2());
+        //testWithDifferentSeeds.testModel(() -> new Cal2());
+        testWithDifferentEpoches.testModel(() -> new Cal2());
     }
 
     public static TestResult testAIModel(Learner learner, int seed, int epoches, int traingsSetSizePerConcept) {
