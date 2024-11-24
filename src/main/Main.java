@@ -2,26 +2,18 @@ package main;
 
 import java.util.*;
 import learning.*;
-import testing.DifferentEpoches;
-import testing.DifferentSeeds;
-import testing.TestAI;
-
 
 public class Main {
 
     public static void main(String[] args) {
         // If feature vectors are not created yet
         //new CreateFeatureVectors();
-        
-        //TestAI testWithDifferentSeeds = new DifferentSeeds();
-        TestAI testWithDifferentEpoches = new DifferentEpoches();
 
-        //testWithDifferentSeeds.testModel(() -> new KNearestNeighbor(3));
-        //testWithDifferentSeeds.testModel(() -> new Cal2());
-        testWithDifferentEpoches.testModel(() -> new Cal2());
+        TestResult result = testAIModel(new NeuralNetwork(27), 1, 2000, 500, true);
+        System.out.println(result);
     }
 
-    public static TestResult testAIModel(Learner learner, int seed, int epoches, int traingsSetSizePerConcept) {
+    public static TestResult testAIModel(Learner learner, int seed, int epoches, int traingsSetSizePerConcept, boolean loggingEnabled) {
         System.out.println("Test AIModel [Learner: " + learner.getClass().getSimpleName() + ", seed: " + seed
                 + ", epoches: " + epoches + "]");
         DataSetCreator dataSetCreator = new DataSetCreator(traingsSetSizePerConcept, seed);
@@ -30,8 +22,10 @@ public class Main {
         List<FeatureVector> testData = dataSetCreator.getTestData();
 
         long timestamp1 = System.currentTimeMillis();
-        for (int i = 0; i < epoches; i++)
+        for (int i = 0; i < epoches; i++) {
+            log(loggingEnabled, "Learn epoche " + i);
             learner.learn(trainingsData);
+        }
         timestamp1 = System.currentTimeMillis() - timestamp1;
 
         Map<Concept, Double> successCount = new HashMap<>();
@@ -66,6 +60,11 @@ public class Main {
                 testData.size() / Concept.values().length,
                 successCountRecalc,
                 average);
-    }   
+    }
+    
+    private static void log(boolean loggingEnabled, String message) {
+        if (loggingEnabled)
+            System.out.println(message);
+    }
 
 }
