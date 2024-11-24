@@ -9,7 +9,8 @@ public class Main {
         // If feature vectors are not created yet
         //new CreateFeatureVectors();
 
-        TestResult result = testAIModel(new NeuralNetwork(27), 1, 2000, 500, true);
+        // 4300 Epoches had highest averageSuccess of 97.7 with the lowest standard deviation of 3.7975...
+        TestResult result = testAIModel(new NeuralNetwork(27), 1, 4300, 500, true);
         System.out.println(result);
 
         // Erfolgsraten extrahieren
