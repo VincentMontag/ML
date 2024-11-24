@@ -11,6 +11,19 @@ public class Main {
 
         TestResult result = testAIModel(new NeuralNetwork(27), 1, 2000, 500, true);
         System.out.println(result);
+
+        // Erfolgsraten extrahieren
+        Map<Concept, Double> successCountRecalc = result.successCount();
+
+        // Standardabweichung berechnen
+        double standardDeviation = calculateStandardDeviation(successCountRecalc);
+
+        // Konfidenzintervall berechnen
+        double[] confidenceInterval = calculateConfidenceInterval(successCountRecalc, 0.95);
+
+        // Ergs
+        System.out.println("Standardabweichung: " + standardDeviation);
+        System.out.println("95% Konfidenzintervall: [" + confidenceInterval[0] + ", " + confidenceInterval[1] + "]");
     }
 
     public static TestResult testAIModel(Learner learner, int seed, int epoches, int traingsSetSizePerConcept, boolean loggingEnabled) {
@@ -60,6 +73,37 @@ public class Main {
                 testData.size() / Concept.values().length,
                 successCountRecalc,
                 average);
+    }
+
+    // Standardabweichung
+    public static double calculateStandardDeviation(Map<Concept, Double> successCountRecalc) {
+        List<Double> successRates = new ArrayList<>(successCountRecalc.values());
+        double mean = successRates.stream()
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(0.0);
+        double sumSquaredDifferences = successRates.stream()
+                .mapToDouble(rate -> Math.pow(rate - mean, 2))
+                .sum();
+        return Math.sqrt(sumSquaredDifferences / successRates.size());
+    }
+
+    // Konfidenzintervall (95%)
+    public static double[] calculateConfidenceInterval(Map<Concept, Double> successCountRecalc, double confidenceLevel) {
+        List<Double> successRates = new ArrayList<>(successCountRecalc.values());
+        double mean = successRates.stream()
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(0.0);
+
+        double standardDeviation = calculateStandardDeviation(successCountRecalc);
+        int n = successRates.size();
+
+        // Für 95%er Konfidenzintervall (n ~ 1.96)
+        double z = 1.96;
+        double marginOfError = z * (standardDeviation / Math.sqrt(n));
+
+        return new double[]{mean - marginOfError, mean + marginOfError};
     }
     
     private static void log(boolean loggingEnabled, String message) {
