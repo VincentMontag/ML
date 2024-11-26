@@ -7,37 +7,40 @@ public class Main {
 
     public static void main(String[] args) {
         // If feature vectors are not created yet
-        //new CreateFeatureVectors();
+        // new CreateFeatureVectors();
 
-        // 4300 Epoches had highest averageSuccess of 97.7 with the lowest standard deviation of 3.7975...
-        TestResult result = testAIModel(new NeuralNetwork(27), 1, 4300, 500, true);
-        System.out.println(result);
+        Random random = new Random();
+        List<Double> successRates = new ArrayList<>();
 
-        // Erfolgsraten extrahieren
-        Map<Concept, Double> successCountRecalc = result.successCount();
+        for (int i = 0; i < 20; i++) {
+            TestResult result = testAIModel(new NeuralNetwork(27), random.nextInt(), 500, 500, false);
+            System.out.println(result);
+            successRates.add(result.averageSuccess());
+        }
 
         // Standardabweichung berechnen
-        double standardDeviation = calculateStandardDeviation(successCountRecalc);
+        double standardDeviation = calculateStandardDeviation(successRates);
 
         // Konfidenzintervall berechnen
-        double[] confidenceInterval = calculateConfidenceInterval(successCountRecalc, 0.95);
+        double[] confidenceInterval = calculateConfidenceInterval(successRates, 0.95);
 
         // Ergs
         System.out.println("Standardabweichung: " + standardDeviation);
         System.out.println("95% Konfidenzintervall: [" + confidenceInterval[0] + ", " + confidenceInterval[1] + "]");
     }
 
-    public static TestResult testAIModel(Learner learner, int seed, int epoches, int traingsSetSizePerConcept, boolean loggingEnabled) {
+    public static TestResult testAIModel(Learner learner, int seed, int epoches, int traingsSetSizePerConcept,
+            boolean useTrainingsDataToTest) {
+
         System.out.println("Test AIModel [Learner: " + learner.getClass().getSimpleName() + ", seed: " + seed
                 + ", epoches: " + epoches + "]");
         DataSetCreator dataSetCreator = new DataSetCreator(traingsSetSizePerConcept, seed);
 
         List<FeatureVector> trainingsData = dataSetCreator.getTrainingsData();
-        List<FeatureVector> testData = dataSetCreator.getTestData();
+        List<FeatureVector> testData = useTrainingsDataToTest ? trainingsData : dataSetCreator.getTestData();
 
         long timestamp1 = System.currentTimeMillis();
         for (int i = 0; i < epoches; i++) {
-            log(loggingEnabled, "Learn epoche " + i);
             learner.learn(trainingsData);
         }
         timestamp1 = System.currentTimeMillis() - timestamp1;
@@ -77,8 +80,7 @@ public class Main {
     }
 
     // Standardabweichung
-    public static double calculateStandardDeviation(Map<Concept, Double> successCountRecalc) {
-        List<Double> successRates = new ArrayList<>(successCountRecalc.values());
+    public static double calculateStandardDeviation(List<Double> successRates) {
         double mean = successRates.stream()
                 .mapToDouble(Double::doubleValue)
                 .average()
@@ -90,26 +92,22 @@ public class Main {
     }
 
     // Konfidenzintervall (95%)
-    public static double[] calculateConfidenceInterval(Map<Concept, Double> successCountRecalc, double confidenceLevel) {
-        List<Double> successRates = new ArrayList<>(successCountRecalc.values());
+    public static double[] calculateConfidenceInterval(List<Double> successRates,
+            double confidenceLevel) {
+
         double mean = successRates.stream()
                 .mapToDouble(Double::doubleValue)
                 .average()
                 .orElse(0.0);
 
-        double standardDeviation = calculateStandardDeviation(successCountRecalc);
+        double standardDeviation = calculateStandardDeviation(successRates);
         int n = successRates.size();
 
         // Für 95%er Konfidenzintervall (n ~ 1.96)
         double z = 1.96;
         double marginOfError = z * (standardDeviation / Math.sqrt(n));
 
-        return new double[]{mean - marginOfError, mean + marginOfError};
-    }
-    
-    private static void log(boolean loggingEnabled, String message) {
-        if (loggingEnabled)
-            System.out.println(message);
+        return new double[] { mean - marginOfError, mean + marginOfError };
     }
 
 }
