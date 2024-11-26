@@ -13,6 +13,7 @@ public class Main {
         List<Double> successRates = new ArrayList<>();
 
         for (int i = 0; i < 20; i++) {
+            System.out.println("\nCurrent Run: " + i);
             TestResult result = testAIModel(new NeuralNetwork(27), random.nextInt(), 500, 500, false);
             System.out.println(result);
             successRates.add(result.averageSuccess());
@@ -24,7 +25,14 @@ public class Main {
         // Konfidenzintervall berechnen
         double[] confidenceInterval = calculateConfidenceInterval(successRates, 0.95);
 
+        // Berechnung des Durchschnitts von successRates
+        double totalAverageSuccess = successRates.stream()
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(Double.NaN);
+
         // Ergs
+        System.out.println("Gesamt-Durchschnitt der Erfolgsraten: " + totalAverageSuccess);
         System.out.println("Standardabweichung: " + standardDeviation);
         System.out.println("95% Konfidenzintervall: [" + confidenceInterval[0] + ", " + confidenceInterval[1] + "]");
     }
