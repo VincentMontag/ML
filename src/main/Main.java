@@ -31,6 +31,7 @@ public class Main {
                 .average()
                 .orElse(Double.NaN);
 
+
         // Ergs
         System.out.println("Gesamt-Durchschnitt der Erfolgsraten: " + totalAverageSuccess);
         System.out.println("Standardabweichung: " + standardDeviation);
