@@ -13,7 +13,7 @@ import java.util.*;
 public class DataPreparation {
 
     private static final String jsonFilePath = "src/FV_new.json";
-    private static final List<String> KEYS = Arrays.asList(
+    private static final List<String> CONCEPTS = Arrays.asList(
             "Fahrtrichtung links",
             "Fahrtrichtung rechts",
             "Stop",
@@ -35,6 +35,7 @@ public class DataPreparation {
         JsonParser parser = factory.createParser(new File(jsonFilePath));
 
         Map<String, List<List<String>>> conceptData = new HashMap<>();
+        Map<String, Integer> conceptCounters = new HashMap<>(); // Zähler für jedes Konzept
 
         while (parser.nextToken() != JsonToken.START_OBJECT) {
         }
@@ -43,10 +44,11 @@ public class DataPreparation {
             if (parser.getCurrentToken() == JsonToken.FIELD_NAME) {
                 String currentKey = parser.getCurrentName();
 
-                if (KEYS.contains(currentKey)) {
+                if (CONCEPTS.contains(currentKey)) {
                     parser.nextToken();
                     if (parser.getCurrentToken() == JsonToken.START_ARRAY) {
                         List<List<String>> images = new ArrayList<>();
+                        int colorCount = 0;
 
                         while (parser.nextToken() != JsonToken.END_ARRAY) {
                             if (parser.getCurrentToken() == JsonToken.START_OBJECT) {
@@ -59,6 +61,7 @@ public class DataPreparation {
                                                 colors.add(parser.getText());
                                             }
                                             images.add(colors);
+                                            colorCount++;
                                         }
                                     }
                                 }
@@ -66,6 +69,7 @@ public class DataPreparation {
                         }
 
                         conceptData.put(currentKey, images);
+                        conceptCounters.put(currentKey, colorCount);
                     }
                 }
             }
@@ -75,9 +79,13 @@ public class DataPreparation {
 
         NDManager manager = NDManager.newBaseManager(); // NDManager zur Erstellung von ND-Arrays
 
-        for (String key : KEYS) {
-            List<List<String>> images = conceptData.getOrDefault(key, new ArrayList<>());
+        for (String concept : CONCEPTS) {
+            List<List<String>> images = conceptData.getOrDefault(concept, new ArrayList<>());
             int totalImages = images.size();
+
+            // Zufälliges Mischen der Daten
+            Collections.shuffle(images, new Random());
+
             int trainCount = Math.round(totalImages * (trainPercentage / 100.0f));
             int testCount = totalImages - trainCount;
 
@@ -89,19 +97,15 @@ public class DataPreparation {
             NDArray testNDArray = createNDArray(manager, testData);
 
             // Logging-Ausgabe
-            System.out.println("Konzept: " + key + " NDArrays werden erstellt...");
-            System.out.println("Trainings NDArray: " + trainNDArray.size());
-            System.out.println("Test NDArray: " + testNDArray.size());
+            System.out.println("Konzept: " + concept + " NDArrays werden erstellt...");
+            System.out.println("Trainings NDArray: " + trainNDArray.size() + " ("+trainNDArray.size()/400+" Bilder)");
+            System.out.println("Test NDArray: " + testNDArray.size()+ " ("+testNDArray.size()/400+" Bilder)");
+
+            System.out.println("Bilder in " + concept + ": " + conceptCounters.getOrDefault(concept, 0)+"\n");
         }
     }
 
-    /**
-     * Konvertiert eine Liste von Farbwertlisten in ein NDArray.
-     *
-     * @param manager NDManager für die Erstellung von ND-Arrays
-     * @param data    Die Trainingsdaten oder Testdaten als Liste
-     * @return NDArray-Darstellung der Eingabedaten
-     */
+    // Konvertiert eine Liste von Farbwertlisten in ein NDArray.
     private static NDArray createNDArray(NDManager manager, List<List<String>> data) {
         int numRows = data.size();
         int numCols = data.isEmpty() ? 0 : data.get(0).size();
@@ -112,7 +116,8 @@ public class DataPreparation {
                 try {
                     arrayData[i][j] = Float.parseFloat(data.get(i).get(j));
                 } catch (NumberFormatException e) {
-                    arrayData[i][j] = 0.0f; // Default-Wert für ungültige Zahlen
+                    // Default-Wert für ungültige Zahlen
+                    arrayData[i][j] = 0.0f;
                 }
             }
         }
