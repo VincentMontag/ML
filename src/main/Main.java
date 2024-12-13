@@ -1,11 +1,15 @@
 package main;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import learning.*;
 
 public class Main {
 
     public static void main(String[] args) {
+        /*
         // If feature vectors are not created yet
         // new CreateFeatureVectors();
 
@@ -36,6 +40,45 @@ public class Main {
         System.out.println("Gesamt-Durchschnitt der Erfolgsraten: " + totalAverageSuccess);
         System.out.println("Standardabweichung: " + standardDeviation);
         System.out.println("95% Konfidenzintervall: [" + confidenceInterval[0] + ", " + confidenceInterval[1] + "]");
+        */
+
+        String filePath = "src/FV_new.json";
+
+        String[] keys = {
+                "Fahrtrichtung links",
+                "Fahrtrichtung rechts",
+                "Stop",
+                "Vorfahrt gewähren",
+                "Vorfahrt von rechts",
+                "Vorfahrtsstraße"
+        };
+
+        try {
+            String content = new String(Files.readAllBytes(Paths.get(filePath)));
+
+            for (String key : keys) {
+                int startIndex = content.indexOf("\"" + key + "\":");
+                if (startIndex == -1) {
+                    System.out.println("'" + key + "' wurde nicht gefunden.");
+                    continue;
+                }
+
+                int arrayStart = content.indexOf("[", startIndex);
+                int arrayEnd = content.indexOf("]", arrayStart);
+
+                if (arrayStart == -1 || arrayEnd == -1) {
+                    System.out.println("Kein gültiges Array für '" + key + "' gefunden.");
+                    continue;
+                }
+
+                String arrayContent = content.substring(arrayStart + 1, arrayEnd);
+
+                String[] elements = arrayContent.split("\\},\\s*\\{");
+                System.out.println("Anzahl der Elemente auf Höhe von '" + key + "': " + elements.length);
+            }
+        } catch (IOException e) {
+            System.err.println("Fehler beim Lesen der JSON-Datei: " + e.getMessage());
+        }
     }
 
     public static TestResult testAIModel(Learner learner, int seed, int epoches, int traingsSetSizePerConcept,
