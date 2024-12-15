@@ -2,33 +2,33 @@ package main;
 
 import ai.djl.ndarray.NDArray;
 
-import java.util.List;
-
 public class DataPreparationResult {
+    private NDArray trainFeatures;
+    private NDArray trainLabels;
+    private NDArray testFeatures;
+    private NDArray testLabels;
 
-    private final List<NDArray> trainNDArrays;
-    private final List<NDArray> testNDArrays;
-
-    public DataPreparationResult(List<NDArray> trainNDArrays, List<NDArray> testNDArrays) {
-        this.trainNDArrays = trainNDArrays;
-        this.testNDArrays = testNDArrays;
+    public DataPreparationResult(NDArray trainFeatures, NDArray trainLabels, NDArray testFeatures, NDArray testLabels) {
+        this.trainFeatures = trainFeatures;
+        this.trainLabels = trainLabels;
+        this.testFeatures = testFeatures;
+        this.testLabels = testLabels;
     }
 
-    public NDArray getTotalTrainingNDArray() {
-        return concatenateArrays(trainNDArrays);
+    public NDArray getTrainFeatures() {
+        return trainFeatures;
     }
 
-    public NDArray getTotalTestNDArray() {
-        return concatenateArrays(testNDArrays);
+    public NDArray getTrainLabels() {
+        return trainLabels;
     }
 
-    private NDArray concatenateArrays(List<NDArray> ndArrays) {
-        if (ndArrays.isEmpty()) return null;
+    public NDArray getTestFeatures() {
+        return testFeatures;
+    }
 
-        NDArray combined = ndArrays.get(0);
-        for (int i = 1; i < ndArrays.size(); i++) {
-            combined = combined.concat(ndArrays.get(i), 0);
-        }
-        return combined;
+    public NDArray getTestLabels() { // NEU
+        return testLabels;
     }
 }
+
